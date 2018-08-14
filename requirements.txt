@@ -1,0 +1,11 @@
+httplib2
+lxml
+matplotlib
+nibabel
+numpy
+pandas
+pycap
+pydicom
+pyxnat
+scipy
+xlrd
