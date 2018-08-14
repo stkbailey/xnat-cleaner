@@ -29,7 +29,14 @@ class XnatSubject:
         session_data = dax.XnatUtils.list_sessions(self.interface, 
                                                    self.database, 
                                                    self.subject)
-        sess_dict = session_data[0]
+        sess_df = pandas.DataFrame(session_data)
+        
+        # Get data on each individual scan
+        scan_data = []
+        for ii, sess in sess_df.iterrows():
+            scan_data += dax.XnatUtils.list_scans(self.interface, 
+                             self.database, self.subject, sess['label'])
+        scan_df = pandas.DataFrame(scan_data)
         
         # Throw error if there is more than one session available
         if len(session_data) != 1:
@@ -37,8 +44,10 @@ class XnatSubject:
                 
         self.meta = {'project': self.subject[0:3],
                      'nsessions': len(session_data),
-                     'session_date': sess_dict['date'], 
-                     'session_id': sess_dict['ID'],
-                     'session_label': sess_dict['label'],
-                     'subject_id': sess_dict['subject_ID']
+                     'session_date': sess_df['date'].tolist(), 
+                     'session_id': sess_df['ID'].tolist(),
+                     'session_label': sess_df['label'].tolist(),
+                     'subject_id': sess_df['subject_ID'].tolist()
                     }
+        self.session_df = sess_df
+        self.scan_df = scan_df
