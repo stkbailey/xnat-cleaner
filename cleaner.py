@@ -85,3 +85,7 @@ class XnatSubject:
 
         if project is not None:
             return rename_dict[project]
+
+
+    def check_duplicate_scans(self):
+        "Look for duplicate scan names that are not allowable ."
