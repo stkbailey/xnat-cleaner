@@ -72,26 +72,13 @@ class XnatSubject:
         """Generate a dictionary of (series_description, scan_type) pairs that encode a 
         valid renaming instance. Top-level dicionary is indexed by EBRL project."""
 
-        rename_dict = {
-            'RC3': {
-                ('t1_structural', 't1_structural'): 't1_improved3d',
-                ('pass1_an', 'pass1_an'): 'rc3_pass_an1'
-            },
-            'LD4': {
-                ('Improved_3D', 'Improved_3D'): 't1_improved3d',
-                ('WIP_HARDI_60_SENSE', 'WIP_HARDI_60_SENSE'): 'hardi_60_sense',
-                ('LERD_Restingstate_200', 'LERD_Restingstate_200'): 'rsfmri_200',
-                ('pass4_ae', 'pass4_ae'): 'LD4_pass_ae4',
-                ('pass4_an', 'pass4_an'): 'LD4_pass_an4',
-                ('pass4_ve', 'pass4_ve'): 'LD4_pass_ve4',
-                ('pass4_vn', 'pass4_vn'): 'LD4_pass_vn4'
-            }
-        }
+        df = pandas.read_csv('scan_type_renames.csv')
 
-        if self.meta['project'] in rename.dict.keys():
-            return rename_dict[project]
-        else:
-            return dict()       
+        rename_dict = {}
+        for ii, s in df.loc[df.project == self.meta['project']]:
+            rename_dict[(s.series_description, s.scan_type)] = s.updated_scan_type
+
+        return rename_dict       
         
         
         
