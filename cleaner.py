@@ -3,7 +3,23 @@ import pandas
 
 
 class XnatSubject:
+    """Extract data from XNAT associated with a single subject. Connects to XNAT using
+    user's credentials (set up previously in DAX), then pulls subject information and 
+    recommends updates to scan and session information.
     
+    Attributes:
+        subject: XNAT subject_label (e.g. LD4001_v1)
+        meta: metadata dictionary associated with subject
+        database: XNAT project (e.g. CUTTING)
+        interface: `dax.XnatUtils` interface instance
+        sess_df: Pandas DataFrame showing all subject sessions
+        scan_df: Pandas DataFrame showing all subject scans
+
+    Methods:
+        get_metadata(): Extract session and scan DataFrames.
+        match_scan_types(): Checks `scan_type_renames.csv` for suggested name changes.
+        update_scan_types(): Applies scan type updates to XNAT scans.       
+    """    
     def __init__(self, subject_label, database='CUTTING', xnat=None):
         "Initialize subject and connections to XNAT."
         
@@ -53,7 +69,7 @@ class XnatSubject:
         self.scan_df = scan_df
 
 
-    def match_and_update_scan_types(self, overwrite=False):
+    def match_scan_types(self, overwrite=False):
         "Match scans from self.scan_df to the repository of possible scan renames."
 
         rename_dict = self.get_scan_rename_dict()
@@ -84,8 +100,7 @@ class XnatSubject:
         
         
 def test_xnat_subject(xnat_subject):
-    """
-    Run a series of test functions on an instance of XnatSubject. These actions include:
+    """Run a series of test functions on an instance of XnatSubject. These actions include:
     
     Included functions:
         check_duplicate_scans: Checking for duplicate scans
