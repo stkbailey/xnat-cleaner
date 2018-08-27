@@ -47,8 +47,7 @@ class XnatSubject:
                      'session_date': sess_df['date'].tolist(), 
                      'session_id': sess_df['ID'].tolist(),
                      'session_label': sess_df['label'].tolist(),
-                     'subject_id': sess_df['subject_ID'].tolist(),
-                     'scan_list': scan_df.apply(lambda x: )
+                     'subject_id': sess_df['subject_ID'].tolist()
                     }
         self.session_df = sess_df
         self.scan_df = scan_df
@@ -57,7 +56,7 @@ class XnatSubject:
     def match_and_update_scan_types(self, overwrite=False):
         "Match scans from self.scan_df to the repository of possible scan renames."
 
-        rename_dict = self.get_scan_rename_dict(project=self.meta['project'])
+        rename_dict = self.get_scan_rename_dict()
         
         for _, scan in self.scan_df.iterrows():
             scan_tuple = (scan.series_description, scan.scan_type)
@@ -65,27 +64,74 @@ class XnatSubject:
                 new_type = rename_dict[scan_tuple]
 
                 # Update the attribute on XNAT, if overwrite is selected
-                if overwrite = True:
+                if overwrite == True:
                     self.interface.select(scan.ID).attrs.set('scan_type', new_type)
 
 
-    def get_scan_rename_dict(self, project=None):
+    def get_scan_rename_dict(self):
         """Generate a dictionary of (series_description, scan_type) pairs that encode a 
-        valid renaming instance. Dicionary is ndexed by project."""
-
-        if project is None:
-            raise ValueError('No project was selected.')
+        valid renaming instance. Top-level dicionary is indexed by EBRL project."""
 
         rename_dict = {
             'RC3': {
                 ('t1_structural', 't1_structural'): 't1_improved3d',
                 ('pass1_an', 'pass1_an'): 'rc3_pass_an1'
+            },
+            'LD4': {
+                ('Improved_3D', 'Improved_3D'): 't1_improved3d',
+                ('WIP_HARDI_60_SENSE', 'WIP_HARDI_60_SENSE'): 'hardi_60_sense',
+                ('LERD_Restingstate_200', 'LERD_Restingstate_200'): 'rsfmri_200',
+                ('pass4_ae', 'pass4_ae'): 'LD4_pass_ae4',
+                ('pass4_an', 'pass4_an'): 'LD4_pass_an4',
+                ('pass4_ve', 'pass4_ve'): 'LD4_pass_ve4',
+                ('pass4_vn', 'pass4_vn'): 'LD4_pass_vn4'
             }
         }
 
-        if project is not None:
+        if self.meta['project'] in rename.dict.keys():
             return rename_dict[project]
+        else:
+            return dict()       
+        
+        
+        
+        
+def test_xnat_subject(xnat_subject):
+    """
+    Run a series of test functions on an instance of XnatSubject. These actions include:
+    
+    Included functions:
+        check_duplicate_scans: Checking for duplicate scans
+        check_incomplete_scans: Check if the scan is of type "Incomplete" or "Unusable" in it
+        Check if the scan and scan data has a renaming rule in a database
+        Check if the scan quality is consistent with expectations (e.g. same amount of frames)
+    """
+    
+    def check_duplicate_scans(xnat_subject):
+        "Check for duplicate scan names that are not allowable (i.e. not 'Incomplete')."
+        df = xnat_subject.scan_df
+        duplicates = df.loc[df.scan_type.duplicated()]
+        try: 
+            assert duplicates.shape[0] == 0
+            print('No duplicate scan types.')
+        except:
+            print('There are duplicate scans:\n' + duplicates['scan_type'].to_string())
+            
+    
+    def check_incomplete_scans(xnat_subject):
+        "Check for scans tagged with 'Incomplete' or 'Unusable'."
+        df = xnat_subject.scan_df
+        bad_strings = ['inc', 'bad', 'incomplete']
 
+        bad_scans = df.scan_type.apply(lambda x: any(s in x for s in bad_strings))
+        try:
+            assert bad_scans.sum() == 0
+            print('No incomplete or unusable scans.')
+        except:
+            print('There are incomplete scans:\n' +
+                  df.loc[bad_scans==True, 'scan_type'].to_string())
 
-    def check_duplicate_scans(self):
-        "Look for duplicate scan names that are not allowable ."
+            
+    print('Output log for {}:'.format(x.subject))
+    check_duplicate_scans(xnat_subject)
+    check_incomplete_scans(xnat_subject)
