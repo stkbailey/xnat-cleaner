@@ -34,10 +34,11 @@ class XnatSubject:
         # Select XNAT object
         self.xnat_object = xnat.select.project(database).subject(subject_label)
         
-        # Populate metadata for subject
+        # Gather metadata and evaluate subject
         self.get_metadata()
         self.match_scan_types()
         self.run_test_functions()
+        self.print_summary()
 
         
     def get_metadata(self):
@@ -151,18 +152,49 @@ class XnatSubject:
 
         try: 
             assert duplicates.shape[0] == 0
-            self.log['duplicates'] = None
+            self.log['duplicate_scans'] = None
         except AssertionError:
-            self.log['duplicates'] = duplicates['scan_type'].to_string()
+            self.log['duplicate_scans'] = duplicates[['ID', 'scan_type']].to_records()
 
         
     def check_incomplete_scans(self):
         "Check for scans tagged with 'Incomplete' or 'Unusable'."
         bad_strings = ['inc', 'bad', 'incomplete']
-
         bad_scans = self.scan_df.scan_type.apply(lambda x: any(s in x.lower() for s in bad_strings))
+
         try:
             assert bad_scans.sum() == 0
             self.log['incomplete_scans'] = None
         except AssertionError:
-            self.log['incomplete_scans'] = self.scan_df.loc[bad_scans==True, 'scan_type'].to_string()
+            self.log['incomplete_scans'] = self.scan_df.loc[bad_scans==True, 
+                                                            ['ID', 'scan_type']].to_records()
+            
+    def print_summary(self):
+        'Print a summary of scan data, proposed changes, and erroneous scans.'
+        
+        # Print subject information
+        print('Subject ID: {}'.format(self.subject))
+        print('Project: {}'.format(self.meta['project']))
+        print('Session(s): {}'.format(','.join(self.meta['session_label'])))
+        print('Session date(s): {}'.format(','.join(self.meta['session_date'])))
+               
+        # Print the proposed scan renames
+        self.update_scan_types(overwrite=False)
+        
+        # Print any duplicate scans
+        try:
+            d = self.log['duplicate_scans']
+            s = '\n\t'.join('{}, {}'.format(str(a), str(b)) for a, b 
+                             in d[['ID', 'scan_type']].tolist())
+            print('Duplicate scans:\n\t{}'.format(s))
+        except:
+            print('Duplicate scans: None')
+            
+        # Print any incomplete / bad scans
+        try:
+            d = self.log['incomplete_scans']
+            s = '\n\t'.join('{}, {}'.format(str(a), str(b)) for a, b 
+                             in d[['ID', 'scan_type']].tolist())
+            print('Incomplete scans:\n\t{}'.format(s))
+        except:
+            print('Incomplete scans: None')
