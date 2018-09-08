@@ -1,8 +1,5 @@
 # Xnat Cleaner
 The purpose of this package is to update the Cutting lab's data on XNAT so that it remains consistent and appropriately named. This allows assessors to be run on the data in a timely fashion, and promots analyses by alerting users to inappropriate data
-
-        # Create metadata, specially around the project and the scan series description
-        # We will compare the scan to a list of suggested renames, then rename it if appropriate.
         
 ## Usage
 To run a subject through the cleaner, do the following:
