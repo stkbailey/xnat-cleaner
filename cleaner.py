@@ -38,8 +38,8 @@ class XnatSubject:
         self.get_metadata()
         self.match_scan_types()
         self.run_test_functions()
+
         
-    
     def get_metadata(self):
         "Return information about the subject's sessions and scans."
         
@@ -99,8 +99,8 @@ class XnatSubject:
             else:
                 print('Scan rename (suggested): {} ({}, {}) to {}.'.format(scan_id, 
                                       s.series_description, s.scan_type, new_type))
-                
 
+                
     def match_scan_types(self):
         """
         Match scans from self.scan_df to the repository of possible scan renames.
@@ -116,8 +116,7 @@ class XnatSubject:
             if scan_tuple in rename_dict.keys():
                 self.scan_renames[scan.ID] = rename_dict[scan_tuple]
 
-
-
+                
     def get_scan_rename_dict(self):
         """Generate a dictionary of (series_description, scan_type) pairs that encode a 
         valid renaming instance. Top-level dicionary is indexed by EBRL project."""
@@ -141,8 +140,7 @@ class XnatSubject:
             Check if the scan quality is consistent with expectations (e.g. same amount of frames)
         """
 
-        self.log = {}
-          
+        self.log = {}         
         self.check_duplicate_scans()
         self.check_incomplete_scans()
     
@@ -168,6 +166,3 @@ class XnatSubject:
             self.log['incomplete_scans'] = None
         except AssertionError:
             self.log['incomplete_scans'] = self.scan_df.loc[bad_scans==True, 'scan_type'].to_string()
-
-                
- 
