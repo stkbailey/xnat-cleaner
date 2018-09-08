@@ -78,16 +78,17 @@ class XnatSubject:
         self.match_scan_types()
 
         for scan_id, new_type in self.scan_renames.iteritems():
+	    sess  = self.scan_df.loc[self.scan_df.ID == scan_id, 'session_id'].iloc[0]
+
             # Update the attribute on XNAT, if overwrite is selected
             if overwrite == True:
-                self.interface.select(scan_id).attrs.set('scan_type', new_type)
+                self.interface.select.project('CUTTING').subject(self.subject_id).experiment(sess).scan(scan_id).attrs.set('type', new_type)
                 print('Updated {} to new scan type: {}'.format(scan_id, new_type))
             
             # Otherwise, just print the updated 
             else:
-                s = self.scan_df.loc[self.scan_df.ID == scan_id]
-                print('Scan rename (suggested): {}, {}, {} to {}.'.format(s.scan_num, 
-                       s.series_description, s.scan_type, new_type))
+                print('Scan rename (suggested): {} to {}.'.format( 
+                       scan_id, new_type ))
 
 
     def match_scan_types(self):
@@ -112,7 +113,7 @@ class XnatSubject:
         df = pandas.read_csv('scan_type_renames.csv')
 
         rename_dict = {}
-        for ii, s in df.loc[df.project == self.meta['project']]:
+        for ii, s in df.loc[df.project == self.meta['project']].iterrows():
             rename_dict[(s.series_description, s.scan_type)] = s.updated_scan_type
 
         return rename_dict       
