@@ -36,7 +36,9 @@ class XnatSubject:
         
         # Populate metadata for subject
         self.get_metadata()
-    
+        self.match_scan_types()
+        self.run_test_functions()
+        
     
     def get_metadata(self):
         "Return information about the subject's sessions and scans."
@@ -75,28 +77,37 @@ class XnatSubject:
         this function will update each object on XNAT with the suggested
         scan type rename. If False, it will simply print the suggested renames.
         """
-        self.match_scan_types()
-
+        # loop through each item in the matched scan types and rename
         for scan_id, new_type in self.scan_renames.iteritems():
-	    sess  = self.scan_df.loc[self.scan_df.ID == scan_id, 'session_id'].iloc[0]
-
+            s  = self.scan_df.loc[self.scan_df.ID == scan_id].iloc[0]
+            obj = (self.interface.select.project('CUTTING')
+                       .subject(s.subject_label)
+                       .experiment(s.session_label)
+                       .scan(scan_id) )
+                    
             # Update the attribute on XNAT, if overwrite is selected
             if overwrite == True:
-                self.interface.select.project('CUTTING').subject(self.subject_id).experiment(sess).scan(scan_id).attrs.set('type', new_type)
-                print('Updated {} to new scan type: {}'.format(scan_id, new_type))
+                obj.attrs.set('type', new_type)
+                print('Updated {} ({}, {}) to new scan type: {}'.format(scan_id, 
+                                      s.series_description, s.scan_type, new_type))
+                
+                # Refresh the scan metadata and scan_type matches
+                self.get_metadata()
+                self.match_scan_types()
             
             # Otherwise, just print the updated 
             else:
-                print('Scan rename (suggested): {} to {}.'.format( 
-                       scan_id, new_type ))
-
+                print('Scan rename (suggested): {} ({}, {}) to {}.'.format(scan_id, 
+                                      s.series_description, s.scan_type, new_type))
+                
 
     def match_scan_types(self):
         """
         Match scans from self.scan_df to the repository of possible scan renames.
         Returns a dictionary of suggested "scan type" renames.
         """
-
+        
+        # Initialize dictionary of scan_renames
         rename_dict = self.get_scan_rename_dict()
         self.scan_renames = {}
 
@@ -104,6 +115,7 @@ class XnatSubject:
             scan_tuple = (scan.series_description, scan.scan_type)
             if scan_tuple in rename_dict.keys():
                 self.scan_renames[scan.ID] = rename_dict[scan_tuple]
+
 
 
     def get_scan_rename_dict(self):
@@ -130,30 +142,32 @@ class XnatSubject:
         """
 
         self.log = {}
-        
-        def check_duplicate_scans(self):
-            "Check for duplicate scan names that are not allowable (i.e. not 'Incomplete')."
-            df = xnat_subject.scan_df
-            duplicates = df.loc[df.scan_type.duplicated()]
-            try: 
-                assert duplicates.shape[0] == 0
-                self.log['duplicates'] = None
-            except AssertionError:
-                self.log['duplicates'] = duplicates['scan_type'].to_string()
-                
-        
-        def check_incomplete_scans(self):
-            "Check for scans tagged with 'Incomplete' or 'Unusable'."
-            df = xnat_subject.scan_df
-            bad_strings = ['inc', 'bad', 'incomplete']
+          
+        self.check_duplicate_scans()
+        self.check_incomplete_scans()
+    
+    
+    def check_duplicate_scans(self):
+        "Check for duplicate scan names that are not allowable (i.e. not 'Incomplete')."
+        duplicates = self.scan_df.loc[self.scan_df.scan_type.duplicated()]
 
-            bad_scans = df.scan_type.apply(lambda x: any(s in x.lower() for s in bad_strings))
-            try:
-                assert bad_scans.sum() == 0
-                self.log['incomplete_scans'] = None
-            except AssertionError:
-                self.log['incomplete_scans'] = df.loc[bad_scans==True, 'scan_type'].to_string()
+        try: 
+            assert duplicates.shape[0] == 0
+            self.log['duplicates'] = None
+        except AssertionError:
+            self.log['duplicates'] = duplicates['scan_type'].to_string()
+
+        
+    def check_incomplete_scans(self):
+        "Check for scans tagged with 'Incomplete' or 'Unusable'."
+        bad_strings = ['inc', 'bad', 'incomplete']
+
+        bad_scans = self.scan_df.scan_type.apply(lambda x: any(s in x.lower() for s in bad_strings))
+        try:
+            assert bad_scans.sum() == 0
+            self.log['incomplete_scans'] = None
+        except AssertionError:
+            self.log['incomplete_scans'] = self.scan_df.loc[bad_scans==True, 'scan_type'].to_string()
 
                 
-        check_duplicate_scans(xnat_subject)
-        check_incomplete_scans(xnat_subject)
+ 
