@@ -167,9 +167,17 @@ class XnatSubject:
         "Check for scans tagged with 'Incomplete' or 'Unusable'."
         
         # Select rows from scan_df with unusable scans
-        bad_strings = ['inc', 'bad', 'incomplete', 'unusable']
-        bad_scans = self.scan_df.scan_type.apply(lambda x: any(s in x.lower() for s in bad_strings))
-        unusables = self.scan_df.loc[bad_scans==True]
+        def evaluate_type(scan_type):
+            if scan_type == 'Unusable':
+                return False         
+            
+            bad_strings = ['inc', 'bad', 'incomplete', 'unusable']
+            if any(s in scan_type.lower() for s in bad_strings):
+                return True
+            else:
+                return False
+        
+        unusables = self.scan_df.loc[self.scan_df.scan_type.apply(evaluate_type)]
 
         try:
             assert unusables.shape[0] == 0
@@ -208,7 +216,7 @@ class XnatSubject:
         # Refresh the scan metadata and scan_type matches
         if overwrite == True:
             self.get_metadata()
-            self.match_scan_types()
+            self.check_unusable_scans()
 
             
     def print_summary(self):
@@ -237,6 +245,6 @@ class XnatSubject:
             d = self.log['unusable_scans']
             s = '\n\t'.join('{}, {}'.format(str(a), str(b)) for a, b 
                              in d[['ID', 'scan_type']].tolist())
-            print('Unusable scans:\n\t{}'.format(s))
+            print('Unflagged unusable scans:\n\t{}'.format(s))
         except:
-            print('Unusable scans: None')
+            print('Unflagged unusable scans: None')
