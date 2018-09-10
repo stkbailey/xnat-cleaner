@@ -20,7 +20,8 @@ class XnatSubject:
         match_scan_types(): Checks `scan_type_renames.csv` for suggested name changes.
         update_scan_types(): Applies scan type updates to XNAT scans.       
     """    
-    def __init__(self, subject_label, database='CUTTING', xnat=None):
+    def __init__(self, subject_label, database='CUTTING', xnat=None, 
+                 print_summary=False):
         "Initialize subject and connections to XNAT."
         
         self.subject = subject_label
@@ -38,7 +39,10 @@ class XnatSubject:
         self.get_metadata()
         self.match_scan_types()
         self.run_test_functions()
-        self.print_summary()
+
+        # Print summary if requested
+        if print_summary == True:
+            self.print_summary()
 
         
     def get_metadata(self):
@@ -91,15 +95,16 @@ class XnatSubject:
                 obj.attrs.set('type', new_type)
                 print('Updated {} ({}, {}) to new scan type: {}'.format(scan_id, 
                                       s.series_description, s.scan_type, new_type))
-                
-                # Refresh the scan metadata and scan_type matches
-                self.get_metadata()
-                self.match_scan_types()
             
             # Otherwise, just print the updated 
             else:
-                print('Scan rename (suggested): {} ({}, {}) to {}.'.format(scan_id, 
+                print('Suggested scan rename: {} ({}, {}) to {}.'.format(scan_id, 
                                       s.series_description, s.scan_type, new_type))
+
+        # If scans updated, refresh the scan metadata and scan_type matches
+        if overwrite == True:
+            self.get_metadata()
+            self.match_scan_types()
 
                 
     def match_scan_types(self):
@@ -154,20 +159,54 @@ class XnatSubject:
             assert duplicates.shape[0] == 0
             self.log['duplicate_scans'] = None
         except AssertionError:
-            self.log['duplicate_scans'] = duplicates[['ID', 'scan_type']].to_records()
+            cols = ['ID', 'subject_label', 'session_label', 'scan_type']
+            self.log['duplicate_scans'] = duplicates[cols].to_records()
 
         
     def check_incomplete_scans(self):
         "Check for scans tagged with 'Incomplete' or 'Unusable'."
         bad_strings = ['inc', 'bad', 'incomplete']
         bad_scans = self.scan_df.scan_type.apply(lambda x: any(s in x.lower() for s in bad_strings))
+        incompletes = self.scan_df.loc[bad_scans==True]
 
         try:
-            assert bad_scans.sum() == 0
+            assert incompletes.shape[0] == 0
             self.log['incomplete_scans'] = None
         except AssertionError:
-            self.log['incomplete_scans'] = self.scan_df.loc[bad_scans==True, 
-                                                            ['ID', 'scan_type']].to_records()
+            cols = ['ID', 'subject_label', 'session_label', 'scan_type']
+            self.log['incomplete_scans'] = incompletes[cols].to_records()
+
+
+    def update_incomplete_scans(self, overwrite = False):
+        "Rename scans tagged as Unusable/Incomplete."
+        incompletes = self.log['incomplete_scans']
+        
+        if incompletes is None:
+            print('No incomplete scans to rename.')
+            return
+        
+        # Loop through scans and update if requested
+        for scan in incompletes:
+            obj = (self.interface.select.project('CUTTING')
+                       .subject(scan['subject_label'])
+                       .experiment(scan['session_label'])
+                       .scan(scan['ID']) )
+                    
+            # Update the attribute on XNAT, if overwrite is selected
+            if overwrite == True:
+                obj.attrs.set('type', 'Unusable')
+                print('Updated {} ({}) to Unusable'.format(scan['ID'], scan['scan_type']))
+            
+            # Otherwise, just print the updated 
+            else:
+                print('Suggested scan rename: {} ({}) to Unusable.'
+                         .format(scan['ID'], scan['scan_type']) )
+
+        # Refresh the scan metadata and scan_type matches
+        if overwrite == True:
+            self.get_metadata()
+            self.match_scan_types()
+
             
     def print_summary(self):
         'Print a summary of scan data, proposed changes, and erroneous scans.'
