@@ -141,14 +141,14 @@ class XnatSubject:
         
         Included functions:
             check_duplicate_scans: Checking for duplicate scans
-            check_incomplete_scans: Check if the scan is of type "Incomplete" or "Unusable" in it
+            check_unusable_scans: Check if the scan is of type "Incomplete" or "Unusable" in it
             Check if the scan and scan data has a renaming rule in a database
             Check if the scan quality is consistent with expectations (e.g. same amount of frames)
         """
 
         self.log = {}         
         self.check_duplicate_scans()
-        self.check_incomplete_scans()
+        self.check_unusable_scans()
     
     
     def check_duplicate_scans(self):
@@ -163,30 +163,33 @@ class XnatSubject:
             self.log['duplicate_scans'] = duplicates[cols].to_records()
 
         
-    def check_incomplete_scans(self):
+    def check_unusable_scans(self):
         "Check for scans tagged with 'Incomplete' or 'Unusable'."
-        bad_strings = ['inc', 'bad', 'incomplete']
+        
+        # Select rows from scan_df with unusable scans
+        bad_strings = ['inc', 'bad', 'incomplete', 'unusable']
         bad_scans = self.scan_df.scan_type.apply(lambda x: any(s in x.lower() for s in bad_strings))
-        incompletes = self.scan_df.loc[bad_scans==True]
+        unusables = self.scan_df.loc[bad_scans==True]
 
         try:
-            assert incompletes.shape[0] == 0
-            self.log['incomplete_scans'] = None
+            assert unusables.shape[0] == 0
+            self.log['unusable_scans'] = None
         except AssertionError:
             cols = ['ID', 'subject_label', 'session_label', 'scan_type']
-            self.log['incomplete_scans'] = incompletes[cols].to_records()
+            self.log['unusable_scans'] = unusables[cols].to_records()
 
 
-    def update_incomplete_scans(self, overwrite = False):
+    def update_unusable_scans(self, overwrite = False):
         "Rename scans tagged as Unusable/Incomplete."
-        incompletes = self.log['incomplete_scans']
         
-        if incompletes is None:
-            print('No incomplete scans to rename.')
+        # Select unusable scans and exit if none
+        unusables = self.log['unusable_scans']        
+        if unusables is None:
+            print('No unusable scans to rename.')
             return
         
         # Loop through scans and update if requested
-        for scan in incompletes:
+        for scan in unusables:
             obj = (self.interface.select.project('CUTTING')
                        .subject(scan['subject_label'])
                        .experiment(scan['session_label'])
@@ -229,11 +232,11 @@ class XnatSubject:
         except:
             print('Duplicate scans: None')
             
-        # Print any incomplete / bad scans
+        # Print any Unusable scans
         try:
-            d = self.log['incomplete_scans']
+            d = self.log['unusable_scans']
             s = '\n\t'.join('{}, {}'.format(str(a), str(b)) for a, b 
                              in d[['ID', 'scan_type']].tolist())
-            print('Incomplete scans:\n\t{}'.format(s))
+            print('Unusable scans:\n\t{}'.format(s))
         except:
-            print('Incomplete scans: None')
+            print('Unusable scans: None')
