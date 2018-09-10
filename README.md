@@ -18,8 +18,8 @@ This instantiates a new subject and runs the following:
 
 To actually edit the XNAT objects...
 
-a. `x.update_unusable_scan_types()` to rename "incomplete scans".
-a. `x.update_scan_types(overwrite=True)` to apply renames to scan types.
+* `x.update_unusable_scan_types()` to rename "incomplete scans".
+* `x.update_scan_types(overwrite=True)` to apply renames to scan types.
 
 
 #### Sources of error
