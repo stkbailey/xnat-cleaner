@@ -6,20 +6,24 @@ To run a subject through the cleaner, do the following:
 
 ```
 from cleaner import XnatSubject
-x = XnatSubject('LD4001_v1')
+x = XnatSubject('LD4001_v1', print_summary=True)
 ```
-This instantiates a new subject and does the following:
 
-1. Retrieves subject information from Xnat and dumps it into `x.meta`, `x.session_df` and `x.scan_df`.
-2. Checks for scans that might be eligible for renaming.
-	a. To update scan types, call `x.update_scan_types(overwrite=True)`.
-3. Tests for common errors, such as duplicate scans or incomplete scans.
-	a. To rename "incomplete scans", call `x.update_incomplete_scan_types()`. (Future update)
-4. Prints a summary of the scan to the screen. 
+This instantiates a new subject and runs the following:
+
+1. `self.get_metadata()`: Retrieves subject information from Xnat and dumps it into `x.meta`, `x.session_df` and `x.scan_df`.
+1. `self.match_scan_types()`: Checks for scans that might be eligible for renaming.
+1. `self.run_test_functions()`: Tests for common errors, such as duplicate scans or incomplete scans.
+1. `self.print_summary()`: prints a summary of the scan to the screen. 
+
+To actually edit the XNAT objects...
+
+a. `x.update_unusable_scan_types()` to rename "incomplete scans".
+a. `x.update_scan_types(overwrite=True)` to apply renames to scan types.
+
 
 #### Sources of error
 - All subjects should match the RegEx pattern: '[A-Z]{2}\d{4}_v[A-Z0-9]' (e.g. LD4001_v1)
 
 #### Future improvements
-- Create an `update_incomplete_scan_types()` function to change incomplete scans to "incomplete".
 - Check if the scan quality is consistent with expectatinos (e.g. same amount of frames), file size, etc.
