@@ -30,4 +30,15 @@ LM1,passages_aud_narr_Y3,passages_aud_narr_Y3,LD4_pass_an3
 LM1,passages_aud_exp_Y3,passages_aud_exp_Y3,LD4_pass_ae3
 LM1,passages_visual_exp_Y3,passages_visual_exp_Y3,LD4_pass_ve3
 LM1,passages_visual_narr_Y3,passages_visual_narr_Y3,LD4_pass_vn3
-RC3,Paslk,kjasdifop,alskdj
+DL5,PicEncode_v1,PicEncode_v1,DL5_PicEncode1
+DL5,PicEncode_v2,PicEncode_v2,DL5_PicEncode2
+DL5,PicRetrieval_v1,PicRetrieval_v1,DL5_PicRetrieval1
+DL5,PicRetrieval_v2,PicRetrieval_v2,DL5_PicRetrieval2
+DL5,T1,T1,t1_improved3d
+DL5,t1_structural,t1_structural,t1_improved3d
+DL5,WordEncode_v1,WordEncode_v1,DL5_WordEncode1
+DL5,WordEncode_v2,WordEncode_v2,DL5_WordEncode2
+DL5,WordRetrieval_v1,WordRetrieval_v1,DL5_WordRetrieval1
+DL5,WordRetrieval_v2,WordRetrieval_v2,DL5_WordRetrieval2
+DL5,PicEncode_v1,PicEncode_v2,DL5_PicEncode2
+DL5,PicRetrieval_v1,PicRetrieval_v2,DL5_PicRetrieval2
