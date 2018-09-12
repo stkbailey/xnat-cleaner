@@ -42,3 +42,16 @@ DL5,WordRetrieval_v1,WordRetrieval_v1,DL5_WordRetrieval1
 DL5,WordRetrieval_v2,WordRetrieval_v2,DL5_WordRetrieval2
 DL5,PicEncode_v1,PicEncode_v2,DL5_PicEncode2
 DL5,PicRetrieval_v1,PicRetrieval_v2,DL5_PicRetrieval2
+RC3,RC3_Restingstate_200,RC3_Restingstate_200,rsfmri_200
+RC3,RC3_Restingstate_200_Y3,RC3_Restingstate_200_Y3,rsfmri_200
+LD4,LERD_Restingstate_200,LERD_Restingstate_200,rsfmri_200
+LD1 ,fMRI Resting State 135,fMRI Resting State 135,rsfmri_135
+LD1 ,WIP fMRI Resting State RC160 SENSE,WIP fMRI Resting State RC160 SENSE,rsfmri_160
+LM1,RC3_Restingstate_200,RC3_Restingstate_200,rsfmri_200
+UN1,WIP rest1_200d SENSE rsfmri_200,WIP rest1_200d SENSE rsfmri_200,rsfmri_200
+NF3,RS_fMRI,RS_fMRI,rsfmri_400
+NF3,rsfmri_mb2_365,rsfmri_mb2_365,rsfmri_365
+DL5,RS_fMRI,RS_fMRI,rsfmri_340
+LM9,rsfmri_mb2_365,rsfmri_mb2_365,rsfmri_365
+LM9,RS_fMRI,RS_fMRI,rsfmri_480
+LM9,rsfMRI-WB-MB2,rsfMRI-WB-MB2,rsfmri_480
