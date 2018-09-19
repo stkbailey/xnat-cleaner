@@ -43,8 +43,8 @@ DL5,WordRetrieval_v1,WordRetrieval_v1,DL5_WordRetrieval_v1
 DL5,WordRetrieval_v2,WordRetrieval_v2,DL5_WordRetrieval_v2
 DL5,PicEncode_v1,PicEncode_v2,DL5_PicEncode_v2
 DL5,PicRetrieval_v1,PicRetrieval_v2,DL5_PicRetrieval_v2
-DL5,RS_fMRI,RS_fMRI,rsfmri_340
+DL5,RS_fMRI,RS_fMRI,rsfmri_mb2_340
 LD1,fMRI Resting State 135,fMRI Resting State 135,rsfmri_135
 LD1,WIP fMRI Resting State RC160 SENSE,WIP fMRI Resting State RC160 SENSE,rsfmri_160
-NF3,RS_fMRI,RS_fMRI,rsfmri_400
-NF3,rsfmri_mb2_365,rsfmri_mb2_365,rsfmri_365
+NF3,RS_fMRI,RS_fMRI,rsfmri_mb2_400
+NF3,rsfmri_mb2_365,rsfmri_mb2_365,rsfmri_mb2_365
